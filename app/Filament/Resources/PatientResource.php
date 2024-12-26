@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\DoctorResource\Pages;
-use App\Filament\Resources\DoctorResource\RelationManagers;
-use App\Models\Doctor;
+use App\Filament\Resources\PatientResource\Pages;
+use App\Filament\Resources\PatientResource\RelationManagers;
+use App\Models\Patient;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,11 +13,11 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class DoctorResource extends Resource
+class PatientResource extends Resource
 {
-    protected static ?string $model = Doctor::class;
+    protected static ?string $model = Patient::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user';
+    protected static ?string $navigationIcon = 'heroicon-o-heart';
 
     public static function form(Form $form): Form
     {
@@ -25,17 +25,22 @@ class DoctorResource extends Resource
             ->schema([
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name', function ($query) {
-                        // Filter user dengan role 'doctor' dan belum ada relasi doctor
-                        $query->where('role', 'doctor')
-                            ->whereDoesntHave('doctor'); // memastikan user tidak memiliki relasi doctor
+                        $query->where('role', 'patient')
+                            ->whereDoesntHave('patient');
                     })
                     ->required()
                     ->helperText(function ($state) {
-                        return $state == null ? 'If no data available, create new user as doctor!' : '';
+                        return $state == null ? 'If no data available, create new user as patient!' : '';
                     }),
-                Forms\Components\TextInput::make('specialization')
+                Forms\Components\DatePicker::make('birth_date')
                     ->required(),
-                Forms\Components\Textarea::make('schedule')
+                Forms\Components\Select::make('gender')
+                    ->options([
+                        'male' => 'Male',
+                        'female' => 'Female',
+                    ])
+                    ->required(),
+                Forms\Components\TextInput::make('phone_number')
                     ->required(),
             ]);
     }
@@ -46,12 +51,16 @@ class DoctorResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Name'),
-                Tables\Columns\TextColumn::make('specialization'),
-                Tables\Columns\TextColumn::make('schedule'),
+                Tables\Columns\TextColumn::make('birth_date'),
+                Tables\Columns\TextColumn::make('gender'),
+                Tables\Columns\TextColumn::make('phone_number'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('specialization')
-                    ->options(fn () => Doctor::query()->pluck('specialization', 'specialization')->toArray()),
+                Tables\Filters\SelectFilter::make('gender')
+                    ->options([
+                        'male' => 'Male',
+                        'female' => 'Female',
+                    ]),
             ])            
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -67,7 +76,7 @@ class DoctorResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageDoctors::route('/'),
+            'index' => Pages\ManagePatients::route('/'),
         ];
     }
 }

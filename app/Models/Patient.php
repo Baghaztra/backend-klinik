@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Doctor extends Model
+class Patient extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'specialization',
-        'schedule',
+        'birth_date',
+        'gender',
+        'phone_number',
     ];
 
     // Relasi
@@ -31,4 +32,3 @@ class Doctor extends Model
         return $this->hasMany(MedicalRecord::class);
     }
 }
-

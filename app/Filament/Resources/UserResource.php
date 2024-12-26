@@ -39,13 +39,14 @@ class UserResource extends Resource
                     ->dehydrateStateUsing(fn ($state) => $state ? bcrypt($state) : null)
                     ->required(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\CreateRecord)
                     ->helperText(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord 
-                        ? 'Kosongkan jika tidak ingin mengubah password.' 
+                        ? 'Leave it empty password not changed.' 
                         : null)
                     ->dehydrated(fn ($state) => !empty($state)),
                 Forms\Components\Select::make('role')
                     ->options([
                         'admin' => 'Admin',
                         'patient' => 'Patient',
+                        'doctor' => 'Doctor',
                     ])->required(),
             ]);
     }
@@ -59,8 +60,13 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('role'),
             ])
             ->filters([
-                //
-            ])
+                Tables\Filters\SelectFilter::make('role')
+                    ->options([
+                        'admin' => 'Admin',
+                        'patient' => 'Patient',
+                        'doctor' => 'Doctor',
+                    ]),
+            ])            
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

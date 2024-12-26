@@ -2,23 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AppointmentResource\Pages;
-use App\Filament\Resources\AppointmentResource\RelationManagers;
-use App\Models\Appointment;
+use App\Filament\Resources\MedicalRecordResource\Pages;
+use App\Filament\Resources\MedicalRecordResource\RelationManagers;
+use App\Models\MedicalRecord;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class AppointmentResource extends Resource
+class MedicalRecordResource extends Resource
 {
-    protected static ?string $model = Appointment::class;
+    protected static ?string $model = MedicalRecord::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard';
 
     public static function form(Form $form): Form
     {
@@ -44,14 +43,11 @@ class AppointmentResource extends Resource
                     })
                     ->label('Doctor')
                     ->required(),
-                Forms\Components\DatePicker::make('appointment_date')
+                Forms\Components\Textarea::make('diagnosis')
                     ->required(),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'confirmed' => 'Confirmed',
-                        'canceled' => 'Canceled',
-                    ])
+                Forms\Components\Textarea::make('treatment')
+                    ->required(),
+                Forms\Components\DatePicker::make('date')
                     ->required(),
             ]);
     }
@@ -64,16 +60,12 @@ class AppointmentResource extends Resource
                     ->label('Patient'),
                 Tables\Columns\TextColumn::make('doctor.user.name')
                     ->label('Doctor'),
-                Tables\Columns\TextColumn::make('appointment_date'),
-                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('diagnosis'),
+                Tables\Columns\TextColumn::make('treatment'),
+                Tables\Columns\TextColumn::make('date'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'confirmed' => 'Confirmed',
-                        'canceled' => 'Canceled',
-                    ]),
+                // 
             ])            
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -89,7 +81,7 @@ class AppointmentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageAppointments::route('/'),
+            'index' => Pages\ManageMedicalRecords::route('/'),
         ];
     }
 }
