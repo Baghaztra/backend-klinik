@@ -12,7 +12,28 @@ class MedicalRecordController extends Controller
      */
     public function index()
     {
-        $medicalRecords = MedicalRecord::with(['patient', 'doctor'])->get();
+        $user = auth('sanctum')->user();
+
+        $medicalRecords = MedicalRecord::with(['patient', 'doctor'])
+            ->when($user->role === 'patient', function ($query) use ($user) {
+                return $query->where('patient_id', $user->patient->id);
+            })
+            ->when($user->role === 'doctor', function ($query) use ($user) {
+                return $query->where('doctor_id', $user->doctor->id);
+            })
+            ->get()
+            ->map(function ($medicalRecord) {
+                return [
+                    'id' => $medicalRecord->id,
+                    'doctor' => $medicalRecord->doctor->user->name,
+                    'specialization' => $medicalRecord->doctor->specialization,
+                    'patient' => $medicalRecord->patient->user->name,
+                    'diagnosis' => $medicalRecord->diagnosis,
+                    'treatment' => $medicalRecord->treatment,
+                    'date' => $medicalRecord->date,
+                ];
+            });
+
         return response()->json($medicalRecords, 200);
     }
 

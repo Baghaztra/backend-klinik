@@ -12,7 +12,16 @@ class DoctorController extends Controller
      */
     public function index()
     {
-        $doctors = Doctor::with('user')->get();
+        $doctors = Doctor::with('user')->get()->map(function ($doctor) {
+            return [
+                'id' => $doctor->id,
+                'name' => $doctor->user->name,
+                'specialization' => $doctor->specialization,
+                'schedule' => $doctor->schedule,
+                'appointments' => $doctor->appointments->count(),
+                'medical_records' => $doctor->medicalRecords->count(),
+            ];
+        });
         return response()->json($doctors, 200);
     }
 
@@ -42,7 +51,14 @@ class DoctorController extends Controller
             return response()->json(['message' => 'Doctor not found'], 404);
         }
 
-        return response()->json($doctor, 200);
+        return response()->json([
+            'id' => $doctor->id,
+            'name' => $doctor->user->name,
+            'specialization' => $doctor->specialization,
+            'schedule' => $doctor->schedule,
+            'appointments' => $doctor->appointments,
+            'medical_records' => $doctor->medicalRecords,
+        ], 200);
     }
 
     /**

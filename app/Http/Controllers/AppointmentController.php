@@ -8,16 +8,36 @@ use Illuminate\Http\Request;
 class AppointmentController extends Controller
 {
     /**
-     * Display a listing of the appointments.
+     * Display a history of the appointments by user id.
      */
     public function index()
     {
-        $appointments = Appointment::with(['patient', 'doctor'])->get();
+        $user = auth('sanctum')->user();
+
+        $appointments = Appointment::with(['patient', 'doctor'])
+            ->when($user->role === 'patient', function ($query) use ($user) {
+                return $query->where('patient_id', $user->patient->id);
+            })
+            ->when($user->role === 'doctor', function ($query) use ($user) {
+                return $query->where('doctor_id', $user->doctor->id);
+            })
+            ->get()
+            ->map(function ($appointment) {
+                return [
+                    'id' => $appointment->id,
+                    'doctor' => $appointment->doctor->user->name,
+                    'specialization' => $appointment->doctor->specialization,
+                    'patient' => $appointment->patient->user->name,
+                    'appointment_date' => $appointment->appointment_date,
+                    'status' => $appointment->status,
+                ];
+            });
+
         return response()->json($appointments, 200);
     }
 
     /**
-     * Store a newly created appointment in storage.
+     * Make a newly appointment in storage.
      */
     public function store(Request $request)
     {
@@ -32,6 +52,37 @@ class AppointmentController extends Controller
         return response()->json(['message' => 'Appointment created successfully', 'data' => $appointment], 201);
     }
 
+    /**
+     * Display the appointment that the status is .
+     */
+    public function appointmentLatest()
+    {
+        $user = auth('sanctum')->user();
+
+        $appointments = Appointment::with(['patient', 'doctor'])
+            ->when($user->role === 'patient', function ($query) use ($user) {
+                return $query->where('patient_id', $user->patient->id);
+            })
+            ->when($user->role === 'doctor', function ($query) use ($user) {
+                return $query->where('doctor_id', $user->doctor->id);
+            })
+            ->where('appointment_date', '>=', now())
+            ->orderBy('appointment_date', 'asc')
+            ->get()
+            ->map(function ($appointment) {
+                return [
+                    'id' => $appointment->id,
+                    'doctor' => $appointment->doctor->user->name,
+                    'specialization' => $appointment->doctor->specialization,
+                    'patient' => $appointment->patient->user->name,
+                    'appointment_date' => $appointment->appointment_date,
+                    'status' => $appointment->status,
+                ];
+            });
+
+        return response()->json($appointments, 200);
+    }
+    
     /**
      * Display the specified appointment.
      */
