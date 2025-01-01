@@ -12,13 +12,18 @@ class Doctor extends Model
     protected $fillable = [
         'user_id',
         'specialization',
-        'schedule',
+        // 'schedule',
     ];
 
     // Relasi
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    
+    public function schedule()
+    {
+        return $this->hasMany(DoctorSchedule::class);
     }
 
     public function appointments()

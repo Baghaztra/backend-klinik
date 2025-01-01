@@ -2,13 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Doctor>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DoctorSchedule>
  */
-class DoctorFactory extends Factory
+class DoctorScheduleFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,8 +17,7 @@ class DoctorFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory()->create(['role' => 'doctor'])->id,
-            'specialization' => $this->faker->word,
+            //
         ];
     }
 }

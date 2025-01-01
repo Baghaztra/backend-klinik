@@ -26,9 +26,11 @@ class PatientResource extends Resource
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name', function ($query) {
                         $query->where('role', 'patient')
-                            ->whereDoesntHave('patient');
+                            ->orWhereHas('patient', function ($subQuery) {
+                                $subQuery->whereColumn('patients.user_id', '=', 'users.id');
+                            });
                     })
-                    ->required()
+                    ->required()   
                     ->helperText(function ($state) {
                         return $state == null ? 'If no data available, create new user as patient!' : '';
                     }),

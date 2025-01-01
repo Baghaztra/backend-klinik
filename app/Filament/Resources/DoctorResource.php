@@ -25,17 +25,16 @@ class DoctorResource extends Resource
             ->schema([
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name', function ($query) {
-                        // Filter user dengan role 'doctor' dan belum ada relasi doctor
                         $query->where('role', 'doctor')
-                            ->whereDoesntHave('doctor'); // memastikan user tidak memiliki relasi doctor
+                            ->orWhereHas('doctor', function ($subQuery) {
+                                $subQuery->whereColumn('doctors.user_id', '=', 'users.id');
+                            });
                     })
-                    ->required()
+                    ->required()            
                     ->helperText(function ($state) {
                         return $state == null ? 'If no data available, create new user as doctor!' : '';
                     }),
                 Forms\Components\TextInput::make('specialization')
-                    ->required(),
-                Forms\Components\Textarea::make('schedule')
                     ->required(),
             ]);
     }
@@ -47,7 +46,6 @@ class DoctorResource extends Resource
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Name'),
                 Tables\Columns\TextColumn::make('specialization'),
-                Tables\Columns\TextColumn::make('schedule'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('specialization')

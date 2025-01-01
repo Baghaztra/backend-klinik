@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
 
+use function PHPSTORM_META\map;
+
 class DoctorController extends Controller
 {
     /**
@@ -13,11 +15,15 @@ class DoctorController extends Controller
     public function index()
     {
         $doctors = Doctor::with('user')->get()->map(function ($doctor) {
+            $schedule = [];
+            foreach ($doctor->schedule as $sch) {
+                $schedule[] = $sch->day;
+            }
             return [
                 'id' => $doctor->id,
                 'name' => $doctor->user->name,
                 'specialization' => $doctor->specialization,
-                'schedule' => $doctor->schedule,
+                'schedule' => $schedule,
                 'appointments' => $doctor->appointments->count(),
                 'medical_records' => $doctor->medicalRecords->count(),
             ];
