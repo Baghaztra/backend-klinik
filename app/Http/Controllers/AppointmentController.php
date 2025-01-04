@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
@@ -37,6 +38,7 @@ class AppointmentController extends Controller
                     'doctor' => $appointment->doctor->user->name,
                     'specialization' => $appointment->doctor->specialization,
                     'patient' => $appointment->patient->user->name,
+                    'complaints' => $appointment->complaints,
                     'appointment_date' => $appointment->appointment_date,
                     'status' => $appointment->status,
                 ];
@@ -50,15 +52,25 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth('sanctum')->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+        if ($user->role == 'doctor') {
+            return response()->json(['message' => 'Appointments must be create by patient'], 401);
+        }
+
         $validatedData = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
             'doctor_id' => 'required|exists:doctors,id',
+            'complaints' => 'string',
             'appointment_date' => 'required|date',
             'status' => 'required|string',
         ]);
+        $validatedData['patient_id'] = $user->patient->id;
 
         $appointment = Appointment::create($validatedData);
-        return response()->json(['message' => 'Appointment created successfully', 'data' => $appointment], 201);
+        return response()->json(['message' => 'Appointment created successfully', 'data' => $appointment], 200);
     }
 
     /**
@@ -75,7 +87,7 @@ class AppointmentController extends Controller
             ->when($user->role === 'doctor', function ($query) use ($user) {
                 return $query->where('doctor_id', $user->doctor->id);
             })
-            ->where('appointment_date', '>=', now())
+            ->where('appointment_date', '>=', Carbon::yesterday())
             ->orderBy('appointment_date', 'asc')
             ->get()
             ->map(function ($appointment) {
@@ -84,6 +96,7 @@ class AppointmentController extends Controller
                     'doctor' => $appointment->doctor->user->name,
                     'specialization' => $appointment->doctor->specialization,
                     'patient' => $appointment->patient->user->name,
+                    'complaints' => $appointment->complaints,
                     'appointment_date' => $appointment->appointment_date,
                     'status' => $appointment->status,
                 ];
@@ -113,13 +126,17 @@ class AppointmentController extends Controller
     {
         $appointment = Appointment::find($id);
 
+        $user = auth('sanctum')->user();
+
+        if ($user->role == 'patient') {
+            return response()->json(['message' => 'Appointments can\'t be edited by patient'], 401);
+        }
+
         if (!$appointment) {
             return response()->json(['message' => 'Appointment not found'], 404);
         }
 
         $validatedData = $request->validate([
-            'patient_id' => 'exists:patients,id',
-            'doctor_id' => 'exists:doctors,id',
             'appointment_date' => 'date',
             'status' => 'string',
         ]);

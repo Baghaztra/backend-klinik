@@ -21,6 +21,7 @@ class AppointmentFactory extends Factory
         return [
             'patient_id' => Patient::all()->random()->id,
             'doctor_id' => Doctor::all()->random()->id,
+            'complaints' => $this->faker->paragraph,
             'appointment_date' => $this->faker->dateTimeBetween('+1 days', '+1 months'),
             'status' => $this->faker->randomElement(['pending', 'confirmed', 'canceled']),
         ];

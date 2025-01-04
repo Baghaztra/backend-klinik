@@ -44,6 +44,8 @@ class AppointmentResource extends Resource
                     })
                     ->label('Doctor')
                     ->required(),
+                Forms\Components\Textarea::make('complaints')
+                    ->required(),
                 Forms\Components\DatePicker::make('appointment_date')
                     ->required(),
                 Forms\Components\Select::make('status')
@@ -64,6 +66,7 @@ class AppointmentResource extends Resource
                     ->label('Patient'),
                 Tables\Columns\TextColumn::make('doctor.user.name')
                     ->label('Doctor'),
+                Tables\Columns\TextColumn::make('complaints'),
                 Tables\Columns\TextColumn::make('appointment_date'),
                 Tables\Columns\TextColumn::make('status'),
             ])
@@ -74,7 +77,25 @@ class AppointmentResource extends Resource
                         'confirmed' => 'Confirmed',
                         'canceled' => 'Canceled',
                     ]),
-            ])            
+                Tables\Filters\SelectFilter::make('doctor_id')
+                    ->options(function () {
+                        return \App\Models\Doctor::query()
+                            ->join('users', 'doctors.user_id', '=', 'users.id')
+                            ->select('doctors.id', 'users.name')
+                            ->orderBy('users.name')
+                            ->pluck('users.name', 'doctors.id');
+                    })
+                    ->label('Doctor'),
+                Tables\Filters\SelectFilter::make('patient_id')
+                    ->options(function () {
+                        return \App\Models\Patient::query()
+                            ->join('users', 'patients.user_id', '=', 'users.id')
+                            ->select('patients.id', 'users.name')
+                            ->orderBy('users.name')
+                            ->pluck('users.name', 'patients.id');
+                    })
+                    ->label('Patient'),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
