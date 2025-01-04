@@ -10,9 +10,10 @@ class AppointmentController extends Controller
     /**
      * Display a history of the appointments by user id.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = auth('sanctum')->user();
+        $search = $request->query('search');
 
         $appointments = Appointment::with(['patient', 'doctor'])
             ->when($user->role === 'patient', function ($query) use ($user) {
@@ -20,6 +21,14 @@ class AppointmentController extends Controller
             })
             ->when($user->role === 'doctor', function ($query) use ($user) {
                 return $query->where('doctor_id', $user->doctor->id);
+            })
+            ->when($search, function ($query) use ($search) {
+                return $query->whereHas('doctor.user', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                })->orWhereHas('doctor', function ($query) use ($search) {
+                    $query->where('specialization', 'like', "%{$search}%");
+                })->orWhere('appointment_date', 'like', "%{$search}%"
+                )->orWhere('status', 'like', "%{$search}%");
             })
             ->get()
             ->map(function ($appointment) {

@@ -19,7 +19,8 @@ class DoctorFactory extends Factory
     {
         return [
             'user_id' => User::factory()->create(['role' => 'doctor'])->id,
-            'specialization' => $this->faker->word,
+            'specialization' => $this->faker->randomElement(['Umum', 'Umum', 'Umum', 'THT', 'Gigi', 'Kulit']),
+            'profile' => '',
         ];
     }
 }

@@ -10,9 +10,10 @@ class MedicalRecordController extends Controller
     /**
      * Display a listing of the medical records.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = auth('sanctum')->user();
+        $search = $request->query('search');
 
         $medicalRecords = MedicalRecord::with(['patient', 'doctor'])
             ->when($user->role === 'patient', function ($query) use ($user) {
@@ -20,6 +21,15 @@ class MedicalRecordController extends Controller
             })
             ->when($user->role === 'doctor', function ($query) use ($user) {
                 return $query->where('doctor_id', $user->doctor->id);
+            })
+            ->when($search, function ($query) use ($search) {
+                return $query->whereHas('doctor.user', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                })->orWhereHas('doctor', function ($query) use ($search) {
+                    $query->where('specialization', 'like', "%{$search}%");
+                })->orWhere('date', 'like', "%{$search}%"
+                )->orWhere('treatment', 'like', "%{$search}%"
+                )->orWhere('diagnosis', 'like', "%{$search}%");
             })
             ->get()
             ->map(function ($medicalRecord) {

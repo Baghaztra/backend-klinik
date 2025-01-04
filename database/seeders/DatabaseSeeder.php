@@ -28,8 +28,20 @@ class DatabaseSeeder extends Seeder
 
         Patient::factory(5)->create();
         $doctors = Doctor::factory(5)->create();
-        // jadwal
+        // update
+        $n = 0;
         foreach ($doctors as $doctor) {
+            // profile
+            $pfp = [
+                'profiles/doctors/01JGQQGDVNBJWDD8G119CHFX8J.jpg',
+                'profiles/doctors/01JGQQRRR5EZEKMZK565FH6N0F.jpg',
+                'profiles/doctors/01JGQQSSQF2K30FFM14ZEP6BYR.jpg',
+                'profiles/doctors/01JGQQV4VD4PV229T10J7QFE2C.jpg',
+                'profiles/doctors/01JGQQVTT4S36NX7KXCH0F36R5.jpg',
+            ];
+            $doctor->update(['profile' => $pfp[$n % count($pfp)]]);
+            $n++;
+            // jadwal
             $days = [
                 'Senin',
                 'Selasa',

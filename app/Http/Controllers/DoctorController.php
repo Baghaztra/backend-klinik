@@ -12,9 +12,21 @@ class DoctorController extends Controller
     /**
      * Display a listing of the doctors.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $doctors = Doctor::with('user')->get()->map(function ($doctor) {
+        $query = Doctor::with('user');
+
+        if ($request->has('search')) {
+            $query->whereHas('user', function ($subQuery) use ($request) {
+            $subQuery->where('name', 'like', '%' . $request->search . '%');
+            })
+            ->orWhere('specialization', 'like', '%' . $request->search . '%')
+            ->orWhereHas('schedule', function ($subQuery) use ($request) {
+            $subQuery->where('day', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $doctors = $query->get()->map(function ($doctor) {
             $schedule = [];
             foreach ($doctor->schedule as $sch) {
                 $schedule[] = $sch->day;
@@ -22,12 +34,14 @@ class DoctorController extends Controller
             return [
                 'id' => $doctor->id,
                 'name' => $doctor->user->name,
+                'profile' => 'storage/' . $doctor->profile,
                 'specialization' => $doctor->specialization,
                 'schedule' => $schedule,
                 'appointments' => $doctor->appointments->count(),
                 'medical_records' => $doctor->medicalRecords->count(),
             ];
         });
+
         return response()->json($doctors, 200);
     }
 
@@ -60,6 +74,7 @@ class DoctorController extends Controller
         return response()->json([
             'id' => $doctor->id,
             'name' => $doctor->user->name,
+            'profile' => 'storage/' . $doctor->profile,
             'specialization' => $doctor->specialization,
             'schedule' => $doctor->schedule,
             'appointments' => $doctor->appointments,

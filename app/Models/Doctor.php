@@ -12,7 +12,7 @@ class Doctor extends Model
     protected $fillable = [
         'user_id',
         'specialization',
-        // 'schedule',
+        'profile',
     ];
 
     // Relasi

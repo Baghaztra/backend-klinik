@@ -34,6 +34,11 @@ class DoctorResource extends Resource
                     ->helperText(function ($state) {
                         return $state == null ? 'If no data available, create new user as doctor!' : '';
                     }),
+                Forms\Components\FileUpload::make('profile')
+                    ->label('Profile Picture')
+                    ->image()
+                    ->directory('profiles/doctors')
+                    ->required(), 
                 Forms\Components\TextInput::make('specialization')
                     ->required(),
             ]);
@@ -43,6 +48,8 @@ class DoctorResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('profile')
+                    ->label('Profile Picture'),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Name'),
                 Tables\Columns\TextColumn::make('specialization'),
