@@ -87,7 +87,8 @@ class AppointmentController extends Controller
             ->when($user->role === 'doctor', function ($query) use ($user) {
                 return $query->where('doctor_id', $user->doctor->id);
             })
-            ->where('appointment_date', '>=', Carbon::yesterday())
+            ->where('status', '!=', 'canceled')
+            ->where('appointment_date', '>', Carbon::yesterday())
             ->orderBy('appointment_date', 'asc')
             ->get()
             ->map(function ($appointment) {
@@ -116,7 +117,16 @@ class AppointmentController extends Controller
             return response()->json(['message' => 'Appointment not found'], 404);
         }
 
-        return response()->json($appointment, 200);
+        return response()->json([
+            'id' => $appointment->id,
+            'doctor' => $appointment->doctor->user->name,
+            'doctor_id' => $appointment->doctor->id,
+            'patient' => $appointment->patient->user->name,
+            'patient_id' => $appointment->patient->id,
+            'complaints' => $appointment->complaints,
+            'appointment_date' => $appointment->appointment_date,
+            'status' => $appointment->status,
+        ], 200);
     }
 
     /**
@@ -131,18 +141,22 @@ class AppointmentController extends Controller
         if ($user->role == 'patient') {
             return response()->json(['message' => 'Appointments can\'t be edited by patient'], 401);
         }
-
         if (!$appointment) {
             return response()->json(['message' => 'Appointment not found'], 404);
         }
+        if ($user->role == 'doctor' && $appointment->doctor_id != $user->doctor->id) {
+            return response()->json(['message' => 'Unauthorized to edit this appointment'], 403);
+        }
 
         $validatedData = $request->validate([
-            'appointment_date' => 'date',
-            'status' => 'string',
+            'status' => 'required|string|in:approved,canceled',
         ]);
 
         $appointment->update($validatedData);
-        return response()->json(['message' => 'Appointment updated successfully', 'data' => $appointment], 200);
+
+        return response()->json([
+            'message' => 'Appointment updated successfully', 
+        ], 200);
     }
 
     /**

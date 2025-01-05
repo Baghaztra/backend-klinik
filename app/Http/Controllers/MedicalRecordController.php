@@ -52,16 +52,22 @@ class MedicalRecordController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth('sanctum')->user();
+
+        if ($user->role != 'doctor') {
+            return response()->json(['message' => 'Rekam medis hanya bisa diberikan oleh dokter'], 401);
+        }
+
         $validatedData = $request->validate([
             'patient_id' => 'required|exists:patients,id',
-            'doctor_id' => 'required|exists:doctors,id',
             'diagnosis' => 'required|string',
             'treatment' => 'required|string',
-            'date' => 'required|date',
+            'date' => 'required|date_format:Y-m-d',
         ]);
-
-        $medicalRecord = MedicalRecord::create($validatedData);
-        return response()->json(['message' => 'Medical record created successfully', 'data' => $medicalRecord], 201);
+        $validatedData['doctor_id'] = $user->doctor->id;
+        
+        MedicalRecord::create($validatedData);
+        return response()->json(['message' => 'Medical record created successfully'], 200);
     }
 
     /**
