@@ -38,6 +38,9 @@ class AppointmentController extends Controller
                     'doctor' => $appointment->doctor->user->name,
                     'specialization' => $appointment->doctor->specialization,
                     'patient' => $appointment->patient->user->name,
+                    'gender' => $appointment->patient->gender == "male" ? "Pria" : "Wanita",
+                    'age' => Carbon::parse($appointment->patient->birth_date)->age,
+                    'phone_number' => $appointment->patient->phone_number,
                     'complaints' => $appointment->complaints,
                     'appointment_date' => $appointment->appointment_date,
                     'status' => $appointment->status,
@@ -97,6 +100,9 @@ class AppointmentController extends Controller
                     'doctor' => $appointment->doctor->user->name,
                     'specialization' => $appointment->doctor->specialization,
                     'patient' => $appointment->patient->user->name,
+                    'gender' => $appointment->patient->gender == "male" ? "Pria" : "Wanita",
+                    'age' => Carbon::parse($appointment->patient->birth_date)->age,
+                    'phone_number' => $appointment->patient->phone_number,
                     'complaints' => $appointment->complaints,
                     'appointment_date' => $appointment->appointment_date,
                     'status' => $appointment->status,
@@ -123,6 +129,9 @@ class AppointmentController extends Controller
             'doctor_id' => $appointment->doctor->id,
             'patient' => $appointment->patient->user->name,
             'patient_id' => $appointment->patient->id,
+            'gender' => $appointment->patient->gender == "male" ? "Pria" : "Wanita",
+            'age' => Carbon::parse($appointment->patient->birth_date)->age,
+            'phone_number' => $appointment->patient->phone_number,
             'complaints' => $appointment->complaints,
             'appointment_date' => $appointment->appointment_date,
             'status' => $appointment->status,
@@ -144,12 +153,12 @@ class AppointmentController extends Controller
         if (!$appointment) {
             return response()->json(['message' => 'Appointment not found'], 404);
         }
-        if ($user->role == 'doctor' && $appointment->doctor_id != $user->doctor->id) {
+        if ($appointment->doctor_id != $user->doctor->id) {
             return response()->json(['message' => 'Unauthorized to edit this appointment'], 403);
         }
 
         $validatedData = $request->validate([
-            'status' => 'required|string|in:approved,canceled',
+            'status' => 'required|string',
         ]);
 
         $appointment->update($validatedData);
