@@ -54,9 +54,15 @@ class DatabaseSeeder extends Seeder
             foreach ($days as $day) {
                 $make = (bool)mt_rand(0, 1);
                 if ($make) {
+                    $startTime = fake()->time('H:i');
+                    $endTime = fake()->time('H:i');
+                    if ($startTime > $endTime) {
+                        [$startTime, $endTime] = [$endTime, $startTime];
+                    }
                     DoctorSchedule::factory()->create([
                         'doctor_id' => $doctor->id,
                         'day' => $day,
+                        'jam' => $startTime . ' - ' . $endTime,
                     ]);
                 }
             }

@@ -28,8 +28,10 @@ class DoctorController extends Controller
 
         $doctors = $query->get()->map(function ($doctor) {
             $schedule = [];
+            $schedule_detail = [];
             foreach ($doctor->schedule as $sch) {
                 $schedule[] = $sch->day;
+                $schedule_detail[] = $sch->day . " ($sch->jam)";
             }
             return [
                 'id' => $doctor->id,
@@ -37,6 +39,7 @@ class DoctorController extends Controller
                 'profile' => 'storage/' . $doctor->profile,
                 'specialization' => $doctor->specialization,
                 'schedule' => $schedule,
+                'schedule_detail' => $schedule_detail,
                 'appointments' => $doctor->appointments->count(),
                 'medical_records' => $doctor->medicalRecords->count(),
             ];

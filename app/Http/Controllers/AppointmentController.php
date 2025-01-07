@@ -16,7 +16,8 @@ class AppointmentController extends Controller
         $user = auth('sanctum')->user();
         $search = $request->query('search');
 
-        $appointments = Appointment::with(['patient', 'doctor'])
+        // Ambil semua janji temu dengan relasi yang diperlukan
+        $appointments = Appointment::with(['patient', 'doctor.schedule'])
             ->when($user->role === 'patient', function ($query) use ($user) {
                 return $query->where('patient_id', $user->patient->id);
             })
@@ -33,6 +34,9 @@ class AppointmentController extends Controller
             })
             ->get()
             ->map(function ($appointment) {
+                $day = Carbon::parse($appointment->appointment_date)->translatedFormat('l');
+                $time = optional($appointment->doctor->schedule->firstWhere('day', $day))->jam;
+
                 return [
                     'id' => $appointment->id,
                     'doctor' => $appointment->doctor->user->name,
@@ -43,6 +47,7 @@ class AppointmentController extends Controller
                     'phone_number' => $appointment->patient->phone_number,
                     'complaints' => $appointment->complaints,
                     'appointment_date' => $appointment->appointment_date,
+                    'time' => $time,
                     'status' => $appointment->status,
                 ];
             });
@@ -95,6 +100,9 @@ class AppointmentController extends Controller
             ->orderBy('appointment_date', 'asc')
             ->get()
             ->map(function ($appointment) {
+                $day = Carbon::parse($appointment->appointment_date)->translatedFormat('l');
+                $time = optional($appointment->doctor->schedule->firstWhere('day', $day))->jam;
+
                 return [
                     'id' => $appointment->id,
                     'doctor' => $appointment->doctor->user->name,
@@ -105,6 +113,7 @@ class AppointmentController extends Controller
                     'phone_number' => $appointment->patient->phone_number,
                     'complaints' => $appointment->complaints,
                     'appointment_date' => $appointment->appointment_date,
+                    'time' => $time,
                     'status' => $appointment->status,
                 ];
             });
@@ -122,6 +131,9 @@ class AppointmentController extends Controller
         if (!$appointment) {
             return response()->json(['message' => 'Appointment not found'], 404);
         }
+        
+        $day = Carbon::parse($appointment->appointment_date)->translatedFormat('l');
+        $time = optional($appointment->doctor->schedule->firstWhere('day', $day))->jam;
 
         return response()->json([
             'id' => $appointment->id,
@@ -134,6 +146,7 @@ class AppointmentController extends Controller
             'phone_number' => $appointment->patient->phone_number,
             'complaints' => $appointment->complaints,
             'appointment_date' => $appointment->appointment_date,
+            'time' => $time,
             'status' => $appointment->status,
         ], 200);
     }

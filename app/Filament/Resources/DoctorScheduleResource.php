@@ -41,6 +41,7 @@ class DoctorScheduleResource extends Resource
                         'Minggu'=>'Minggu',
                     ])
                     ->required(),
+                Forms\Components\TextInput::make('jam')->required()
             ]);
     }
 
@@ -50,6 +51,7 @@ class DoctorScheduleResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('doctor.user.name')->label('Dokter'),
                 Tables\Columns\TextColumn::make('day')->label('Hari'),
+                Tables\Columns\TextColumn::make('jam'),
             ])
             ->filters([
                 //

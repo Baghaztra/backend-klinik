@@ -9,7 +9,7 @@ class DoctorSchedule extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['doctor_id', 'day'];
+    protected $fillable = ['doctor_id', 'day', 'jam'];
 
     public function doctor()
     {
